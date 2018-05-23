@@ -1,25 +1,31 @@
 <html>
 
 <head>
-    <script src="p5.min.js"></script>
-    <script src="p5.dom.min.js"></script>
-    <script src="p5.play.js"></script>
-    <script src="pong.js"></script>
-    <style>
-        body {
-            display: flex;
-            align-items: center;
-            justify-content: space-around;
-        }
+  <script src="p5.min.js"></script>
+  <script src="p5.dom.min.js"></script>
+  <script src="p5.play.js"></script>
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      flex-direction: column;
+    }
 
-        #pong {
-            flex-flow: row wrap;
-        }
-    </style>
+    #pong {
+      flex-flow: row wrap;
+    }
+  </style>
 </head>
 
+<script src="/socket.io/socket.io.js"></script>
+<script src="socketIo.js"></script>
+
 <body>
+  <div>
     <div id="pong"></div>
+  </div>
 </body>
+<script src="pong.js"></script>
 
 </html>
