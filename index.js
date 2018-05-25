@@ -31,7 +31,6 @@ io.on('connection', function (socket) {
 })
 
 app.use(express.static(path.join(__dirname, 'public')))
-// app.listen(8000, () => console.log('Example app listening on port 8000!'))
 
 http.listen(8000, function () {
   console.log('listening on 8000')

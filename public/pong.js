@@ -1,9 +1,10 @@
 //pong clone
 
 var paddleA, paddleB, ball, wallTop, wallBottom
+var positionSync
 var scoreA = 0
 var scoreB = 0
-var steps = 8
+var steps = 12
 var MAX_SPEED = 20
 
 function setup() {
@@ -15,7 +16,7 @@ function setup() {
   paddleA = createSprite(30, height / 2, 20, 120)
   paddleA.immovable = true
 
-  paddleB = createSprite(width - 28, height / 2, 20, 120)
+  paddleB = createSprite(width - 30, height / 2, 20, 120)
   paddleB.immovable = true
 
   wallTop = createSprite(width / 2, -30 / 2, width, 30)
@@ -34,7 +35,7 @@ function setup() {
   ball.g = true
   ball.b = false
   paddleA.shapeColor = paddleB.shapeColor = ball.shapeColor = color(ball.colorR, ball.colorG, ball.colorB)
-
+  positionSync = setInterval(()=>socket.emit('position', paddleA.position.y), 100)
 }
 
 function draw() {
@@ -47,9 +48,11 @@ function draw() {
 
   if (keyDown(87)) {
     paddleA.position.y = constrain(paddleA.position.y - steps, paddleA.height / 2, height - paddleA.height / 2)
+    socket.emit('position', paddleA.position.y)
   }
   if (keyDown(83)) {
     paddleA.position.y = constrain(paddleA.position.y + steps, paddleA.height / 2, height - paddleA.height / 2)
+    socket.emit('position', paddleA.position.y)
   }
 
   ball.bounce(wallTop)
@@ -58,7 +61,7 @@ function draw() {
   if (ball.bounce(paddleA)) {
     var swing = (ball.position.y - paddleA.position.y) / 3
     ball.setSpeed(MAX_SPEED, ball.getDirection() + swing)
-    let vel = [ball.position.x, ball.position.y, ball.velocity.x, ball.velocity.y]
+    let vel = [ball.position.x, ball.position.y, ball.velocity.x, ball.velocity.y, paddleA.position.y]
     socket.emit('sync', vel)
     console.log('<>', vel)
   }
@@ -86,34 +89,31 @@ function draw() {
 
   if (ball.r && ball.colorR >= 165) {
     ball.colorR--
-    if (ball.colorR === 165) ball.r = false
+    if (ball.colorR <= 165) ball.r = false
   } else if (!ball.r && ball.colorR <= 255) {
     ball.colorR++
-    if (ball.colorR === 255) ball.r = true
+    if (ball.colorR >= 255) ball.r = true
   }
 
   if (ball.g && ball.colorG >= 165) {
     ball.colorG--
-    if (ball.colorG === 165) ball.g = false
+    if (ball.colorG <= 165) ball.g = false
   } else if (!ball.g && ball.colorG <= 255) {
     ball.colorG++
-    if (ball.colorG === 255) ball.g = true
+    if (ball.colorG >= 255) ball.g = true
   }
 
   if (ball.b && ball.colorB >= 165) {
     ball.colorB--
-    if (ball.colorB === 165) ball.b = false
+    if (ball.colorB <= 165) ball.b = false
   } else if (!ball.b && ball.colorB <= 255) {
     ball.colorB++
-    if (ball.colorB === 255) ball.b = true
+    if (ball.colorB >= 255) ball.b = true
   }
 
   paddleA.shapeColor = paddleB.shapeColor = ball.shapeColor = color(ball.colorR, ball.colorG, ball.colorB)
 
   drawSprites()
-
-  socket.emit('position', paddleA.position.y)
-
 }
 
 socket.on('position', position => {
@@ -133,12 +133,13 @@ socket.on('start', () => {
   ball.setSpeed(MAX_SPEED, 180)
 })
 
-// socket.on('sync', vel => {
-//   console.log('sync', vel)
-//   ball.position.x = width - vel[0]
-//   ball.position.y = vel[1]
-//   ball.setVelocity(width-vel[3], vel[4])
-// })
+socket.on('sync', vel => {
+  console.log('sync', vel)
+  ball.position.x = width - vel[0]
+  ball.position.y = vel[1]
+  ball.setVelocity(-vel[2], vel[3])
+  paddleB.position.y = vel[4]
+})
 
 socket.on('restart', dir => {
   console.log('restart')
