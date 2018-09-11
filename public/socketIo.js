@@ -1,15 +1,10 @@
 var socket = io()
-var button = null
 
-// socket.on('join', name => {
-//   console.log('join', name)
-//   if (me && name !== me) {
-//     console.log('pong')
-//     socket.emit('pong')
-//   }
-// })
+socket.on('join', name => {
+  if (me && name !== me) {
+    socket.emit('room_full', 'room_full')
+  }
+})
 
-// me = Math.random()
-// socket.emit('join', me)
-
-// console.log('soo', me)
+var me = Math.random()
+socket.emit('join', me)

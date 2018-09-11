@@ -4,29 +4,37 @@ const http = require('http').Server(app)
 const io = require('socket.io')(http)
 const path = require('path')
 
-// let joined = 0
+let players = {}
 io.on('connection', function (socket) {
-  console.log('>>>>>>>>>')
-
-  // socket.on('join', function (name) {
-  //   if (joined < 3) io.emit('join', name)
-  //   joined++
-  // })
+  socket.on('join', function (name) {
+    let room = Object.keys(players).length - (Object.keys(players).length % 2)
+    players[socket.id] = room
+    socket.join(room)
+    socket.to(players[socket.id]).broadcast.emit('join', name)
+  })
 
   socket.on('position', function (position) {
-    socket.broadcast.emit('position', position)
+    socket.to(players[socket.id]).broadcast.emit('position', position)
+  })
+
+  socket.on('room_full', function (start) {
+    socket.to(players[socket.id]).broadcast.emit('room_full', start)
   })
 
   socket.on('start', function (start) {
-    socket.broadcast.emit('start', start)
+    socket.to(players[socket.id]).broadcast.emit('start', start)
   })
 
   socket.on('restart', function (start) {
-    socket.broadcast.emit('restart', start)
+    socket.to(players[socket.id]).broadcast.emit('restart', start)
   })
 
   socket.on('sync', function (vel) {
-    socket.broadcast.emit('sync', vel)
+    socket.to(players[socket.id]).broadcast.emit('sync', vel)
+  })
+
+  socket.on('retrive', function (vel) {
+    socket.to(players[socket.id]).broadcast.emit('retrive', vel)
   })
 })
 
